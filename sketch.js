@@ -2,26 +2,35 @@ var eyes;
 var tents;
 
 function setup() {
+	print(random(0, 5));
 	createCanvas(windowWidth, windowHeight);
 	background(100);
 	tents = [];
 	//New Tentacle Bois
-	tents.push(new Tentacle(-100, -100, 600, rand(4,6), rand(2, 3), true, .85));
-	tents.push(new Tentacle(windowWidth/4, -100, 200, rand(3,4), rand(2, 3), true, .95));
-	tents.push(new Tentacle(windowWidth/2, -100, 200, rand(3,4), rand(2, 3), true, .95));
-	tents.push(new Tentacle(3 *windowWidth/4, -100, 200, rand(3,4), rand(2, 3), true, .95));
-	tents.push(new Tentacle(windowWidth + 100, -100, 600, rand(4,6), rand(2, 3), true, .85));
+	tents.push(new Tentacle(-100, -100, 400, rand(4,6), random(2, 3), true, .85));
+	tents.push(new Tentacle(windowWidth/4, -100, 200, rand(3,4), random(2, 3), true, .95));
+	tents.push(new Tentacle(windowWidth/2, -100, 150, rand(3,4), random(2, 3), true, .95));
+	tents.push(new Tentacle(3 *windowWidth/4, -100, 200, rand(3,4), random(2, 3), true, .95));
+	tents.push(new Tentacle(windowWidth + 100, -100, 400, rand(4,6), random(2, 3), true, .85));
+	//Side ones
+	//tents.push(new Tentacle(-100, windowHeight/2, 200, rand(4,6), random(2, 3), true, .85));
+	tents.push(new Tentacle(-100, windowHeight/3, 200, rand(4,6), random(2, 3), true, .85));
+	tents.push(new Tentacle(-100, 2 * windowHeight/3, 200, rand(4,6), random(2, 3), true, .85));
+	//tents.push(new Tentacle(windowWidth + 100, windowHeight/2, 200, rand(4,6), random(2, 3), true, .85));
+	tents.push(new Tentacle(windowWidth + 100, windowHeight/3, 200, rand(4,6), random(2, 3), true, .85));
+	tents.push(new Tentacle(windowWidth + 100, 2 * windowHeight/3, 200, rand(4,6), random(2, 3), true, .85));
 	eyes = [];
-	for (var i = 0; i < 50; i++)
+	eyes.push(new Eye(windowWidth/2, windowHeight/2, 300, false, 1));
+	for (var i = 0; i < 150; i++)
 	{
 		var newEye;
-		if (i < 5)
+		if (i < 10)
 		{
-			var newEye = new Eye(rand(100, windowWidth - 100), rand(100, windowHeight - 100), rand(200, 300), false);
+			var newEye = new Eye(rand(100, windowWidth - 100), rand(100, windowHeight - 100), rand(200, 300), false, random(4, 5));
 		}
 		else
 		{
-			var newEye = new Eye(rand(100, windowWidth - 100), rand(100, windowHeight - 100), rand(20, 60), true);
+			var newEye = new Eye(rand(100, windowWidth - 100), rand(100, windowHeight - 100), rand(10, 40), true, random(5, 7));
 		}
 		var okay = true;
 		for (var j = 0; j < eyes.length; j++)
@@ -36,6 +45,7 @@ function setup() {
 			eyes.push(newEye);
 		}
 	}
+	eyes.shift();
 }
 
 function draw() {
@@ -44,24 +54,49 @@ function draw() {
 	{
 		eyes[i].draw(mouseX, mouseY);
 	}
-	for (var i = 0; i < tents.length; i++)
+
+	if (millis() < 4000)
 	{
-		tents[i].draw(mouseX, mouseY, true);
+		fill(millis()/4000 * 255);
+		textAlign(CENTER, CENTER);
+		textSize(60);
+		text('Welcome', windowWidth/2, windowHeight/2);
+	}
+	else
+	{
+		fill(255);
+		textAlign(CENTER, CENTER);
+		textSize(60);
+		text('Welcome', windowWidth/2, windowHeight/2);
+		
+		//Draw the tentacles
+		if (millis() > 7000)
+		{
+			for (var i = 0; i < tents.length; i++)
+			{
+				tents[i].draw(mouseX, mouseY, true);
+			}
+		}
 	}
 }
 
 class Eye
 {
-  constructor(x, y, diameter, hides)
+  constructor(x, y, diameter, hides, delay)
   {
     this.x = x;
     this.y = y;
     this.diameter = diameter;
 		this.hides = hides;
+		this.delay = delay * 1000;
   }
   
   draw(mx, my)
 	{
+		if (millis() < this.delay)
+		{
+			return;			
+		}
 		noStroke();
     var angle = atan2(my - this.y, mx - this.x);
     var dista = dist(this.x, this.y, mx, my);
@@ -118,12 +153,13 @@ class Tentacle
   {
     this.x = x;
     this.y = y;
-    this.length = length;
+    this.length = 0;
     this.max = length;
     this.period = period;
     this.period2 = period2;
     this.shifts = shifts;
     this.percentTouch = percentTouch;
+		print("New Tentacle: " + period + " " + period2);
   }
   
   draw(mx, my, shift)
