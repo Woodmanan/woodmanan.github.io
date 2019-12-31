@@ -6,7 +6,7 @@
 -->
 <html>
 	<head>
-		<title>Woody McCoy - Coursework</title>
+		<title>Woody McCoy - Realtime Animation</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
@@ -51,34 +51,34 @@
 				<!-- Main -->
 					<div id="main">
 						<div class="inner">
-							<h1>Relevant Coursework</h1>
-							<!--<span class="image main"><img src="images/pic13.jpg" alt="" /></span>-->
-							<div class="col-6 col-12-medium">
-								<h3>Spring 2020</h3>
-								<ul>
-									<li><a href="http://www.cs.cmu.edu/~213/"><b>15213 - Intro to Computer Systems</b></a> <br> &emsp; - Topics covered include: machine-level code and its generation by optimizing compilers, performance evaluation and optimization, computer arithmetic, memory organization and management, networking technology and protocols, and supporting concurrent computation.</li>
-									<li><a href="https://courses.ideate.cmu.edu/53-471/s2019/?page_id=8"><b>53-471 - Game Design, Prototyping, and Production</b></a> <br> &emsp; - Topics covered include: principles of game design and mechanics, development process such as rapid prototyping and iterative design and common methods of project management for creative software development</li>
-								</ul>
-							</div>
+							<h1>Realtime Animation</h1>
+							<span class="image main"><img src="images/Tree1.png" alt="" /></span>
+							<p>Realtime Animation was an introductory animation class that I took through CMU's IDeATe program. The class focused on techniques for creating art and animation that could be displayed in real time, mostly for game engines.</p>
+							<p>My projects in the class focused on exploiting different animation techniques to create complex, interesting looks while using the minimum amount of processing power. I've compiled some of my projects below, and if you would like to see the official page for the class, <a href="Replace me!!"> click here!</a></p>
+							<p>Addtionally, many of these projects can be downloaded for free from my <a href = "https://woodmanan.itch.io/">Itch.io Page</a>!</p>
 
-							<div class="col-6 col-12-medium">
-								<h3>Fall 2019</h3>
-								<ul>
-									<li><a href="http://www.cs.cmu.edu/~15150/"><b>15150 - Functional Programming</b></a> <br> &emsp; - Topics covered include: Recursion, Specifications and Correctness Proofs, Work and Span Analysis, Parallelism, Polymorphism, Higher-order Functions, and Modular Programming.</li>
-									<li><a href="http://www.cs.cmu.edu/~15251/"><b>15251 - Great Theoretical Ideas in Computer Science</b></a> <br> &emsp; - Topics covered include: Algorithms, Computability, Computational complexity, Finite automata, Turing machines, Graph theory,,Boolean circuit complexity, P, NP, NP-completeness, Probability theory, Randomized computation, and Cryptography.</li>
-									<li><a href="realtime.html"><b>60218 - Realtime Animation</b></a> <br> &emsp; - An introductory course that explores improvisational strategies for making animation within real-time computer graphics frameworks.</li>
-									<li><a href="realitycomputing.html"><b>48558 - Reality Computing</b></a> <br> &emsp; - Topics covered include: Capture and digital recreation of real locations and objects through spatially computational methods such as photo grammetry and LIDAR. Refinement of digital assets and optimization for real-time rendering and inclusion in interactive virtual environments. Exploration of digital spaces.</li>
-								</ul>
-							</div>
+							<h3>Portals Project</h3>
+							<span class="image main"><img src="images/realtimePortal.png" alt="" /></span>
+							<span class="image main"><img src="images/realtimePortal2.png" alt="" /></span>
+							<p>For my final project in the class, I used a custom shader and scripts to create an interactive portal effect. The portals worked by taking camera input from cameras that mirrored the player location at the target destination, converting the UV's of the portal into worldspace, and then cutting out the texture using those UV's. When paired with script that teleported the player when they entered from certain directions, I was able to create a realistic, seamless transition through the portals.</p>
+							<hr>
 
-							<div class="col-6 col-12-medium">
-								<h3>Spring 2019</h3>
-								<ul>
-									<li><a href="http://www.cs.cmu.edu/~15122/about.shtml"><b>15122 - Principles of Imperative Computation</b></a> <br> &emsp; - Topics covered include: <u>Reasoning about code</u>: contracts, invariants, and interfaces; <u>Basic Data Structures and Algorithms</u>: Hash Tables, BST, Linked Lists, Graphs; and the <u>C programming language</u>: Bit Manipulation, Complexity Analysis, and Memory</li>
-									<li><a href="http://www.math.cmu.edu/~mradclif/teaching/127S19/syllabus.html"><b>15127 - Concepts of Mathematics</b></a> <br> &emsp; - An introductory class about proofs, logic, and inductive reasoning. </li>
-									<li><a href="http://www.math.cmu.edu/~handron/21_241/index.html"><b>12241 - Matrices and Linear Transformations</b></a> <br> &emsp; - Topics covered include: complex numbers, real and complex vectors and matrices, rowspace and columnspace of a matrix, rank and nullity, solving linear systems by row reduction of a matrix, inverse matrices and determinants, change of basis, linear transformations, inner product of vectors, orthonormal bases and the Gram-Schmidt process, eigenvectors and eigenvalues, diagonalization of a matrix, symmetric and orthogonal matrices.</li>
-								</ul>
-							</div>
+							<h3>Unititled Tree Game</h3>
+							<span class="image main"><img src="images/Tree3.png" alt="" /></span>
+							<p>For this project, we were tasked with creating an experience that evokes the feeling of being something else. My team chose to make our game about being a flock of trees, who have to surive the seasons. The game featured a dynamic seasons controller that handled the visuals and gameplay, and a fancy snow shader that took advantage of normals to calculate where snow would realistically fall, and cover those areas first (This can be seen above on some of the rocks, which have snow on the top but not the sides).</p>
+							<hr>
+
+							<!--TODO: Add in monsters here-->
+
+							<h3>Expressive Environments</h3>
+							<span class="image main"><img src="images/realtimeTower.gif" alt="" /></span>
+							<p>For this project, we were tasked with creating a feeling entirely from the appearance of an environment. For my project, I tried to create a feeling of unease by making an environment where something bad had clearly happened, but there was no clear indication of what. To accomplish this, I used a shader that inverted the colors of objects in large zones of worldspace, and then planted ominous-looking towers in these zones. The end result was that the towers looked like they were warping the world, and the player could push objects into these zones and see them change. I paired these effects with some unsettling noises on repeat, lots of chromatic aberration, and a heavy fog effect to add to the feeling of being lost.</p>
+							<hr>
+
+							<h3>Virtual Toys</h3>
+							<span class="image main"><img src="images/realtimeToys.gif" alt="" /></span>
+							<p>This project required us to make 5 toys in Unity, using whatever sounds or visuals we felt were necessary to make it fun. I used spring phsysics and shaders to create toys that were wobbly and interacted with player input in interesting ways, such as a tentacle that fights with you over the other toys in the scene. Along with the visuals, I added in sounds for many of the toy's interactions, which helped to make the toys feel much more interactive.
+							<p></p>
 
 						</div>
 					</div>
