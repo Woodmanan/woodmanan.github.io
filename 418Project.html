@@ -44,7 +44,7 @@
 							<h3>Background</h3>
 							<ul>
 									<li> Creating a bounding volume hierarchy is often quite an expensive process for arbitrarily complex meshes. It is in essence a process of hierarchically sorting the scene primitives into spatially local groups. </li>
-									<li> The serial algorithm involves iteratively dividing the set of scene primitives, where the “best” division is dependent on a cost function known as the surface area heuristic (SAH). The end product is a binary tree, where nodes represent a bounding box surrounding all scene primitives contained in the leaves of the subtree with the current node as its root. While leaf nodes represent a list of scene primitives. </li>
+									<li> The serial algorithm involves iteratively dividing the set of scene primitives, where the best division is dependent on a cost function known as the surface area heuristic (SAH). The end product is a binary tree, where nodes represent a bounding box surrounding all scene primitives contained in the leaves of the subtree with the current node as its root. While leaf nodes represent a list of scene primitives. </li>
 									<li> The process of creating a BVH can be split into many sub problems. Viewing each node of the BVH tree as a sub problem already puts into view the potential for parallelism. </li>
 									<li> Since sequential creation of BVHs can be expensive, it involves at least O(nlogn) since sorting can be reduced to the problem of BVH creation (at least when the BVH can have arbitrary depth and leaf nodes contain only one primitive). Therefore a lot of room is left for improvement when parallelizing this process. </li>
 								</ul>
@@ -139,60 +139,6 @@ Implement new methods, e.g. k-means method and evaluate their performance with r
 						</div>
 					</div>
 
-				<!-- Footer -->
-					<footer id="footer">
-						<div class="inner">
-							<section>
-								<!--<h2>Get in touch</h2>
-								<form method="post" action="#">
-									<div class="fields">
-										<div class="field half">
-											<input type="text" name="name" id="name" placeholder="Name" />
-										</div>
-										<div class="field half">
-											<input type="email" name="email" id="email" placeholder="Email" />
-										</div>
-										<div class="field">
-											<textarea name="message" id="message" placeholder="Message"></textarea>
-										</div>
-									</div>
-									<ul class="actions">
-										<li><input type="submit" value="Send" class="primary" /></li>
-									</ul>
-								</form>
-								-->
-								<h2>Get In Touch</h2>
-									<div class="row">
-										<div class="col-6 col-12-medium">
-											<ul class="alt">
-												<li><a href="mailto:mwmccoy@andrew.cmu.edu" style="text-decoration:none" class="fa fa-envelope"> mwmccoy@andrew.cmu.edu</a></li>
-												<li><a  class="fa fa-phone"> 502-507-6847</a></li>
-												<li><a href="https://github.com/Woodmanan" target="_blank" class="fas fa-laptop-code" aria-hidden="true"> Github</a></li>
-												<li><a href="https://mwmccoy.itch.io" target="_blank" class="fa fa-gamepad" aria-hidden="true"> Itch.io</a></li>
-												<!--<li>Felis enim feugiat.</li>-->
-											</ul>
-										</div>
-									</div>
-							</section>
-							
-							<!--<section>
-								<h2>Follow</h2>
-								<ul class="icons">
-									<li><a href="#" class="icon brands style2 fa-twitter"><span class="label">Twitter</span></a></li>
-									<li><a href="#" class="icon brands style2 fa-facebook-f"><span class="label">Facebook</span></a></li>
-									<li><a href="#" class="icon brands style2 fa-instagram"><span class="label">Instagram</span></a></li>
-									<li><a href="#" class="icon brands style2 fa-dribbble"><span class="label">Dribbble</span></a></li>
-									<li><a href="https://github.com/Woodmanan" class="icon brands style2 fa-github"><span class="label">GitHub</span></a></li>
-									<li><a href="#" class="icon brands style2 fa-500px"><span class="label">500px</span></a></li>
-									<li><a href="#" class="icon solid style2 fa-phone"><span class="label">Phone</span></a></li>
-									<li><a href="mailto:mwmccoy@andrew.cmu.edu" class="icon solid style2 fa-envelope"><span class="label">Email</span></a></li>
-								</ul>
-							</section>-->
-							<ul class="copyright">
-								<li>&copy; Woody McCoy. All rights reserved</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
-							</ul>
-						</div>
-					</footer>
 
 			</div>
 
