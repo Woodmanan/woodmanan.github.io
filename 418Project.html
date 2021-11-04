@@ -39,81 +39,103 @@
 				<!-- Main -->
 					<div id="main">
 						<div class="inner">
-							<h1>About Me</h1>
-							<span class="image main"><img src="images/Picture.jpg" alt="" /></span>
-							<h3>My Backstory</h3>
-							<p>I was born and raised in rural Kentucky, and have spent most of my life on a farm outside the small town of Bardstown, Kentucky. In highschool, I taught myself how to code, and discovered game development through small coding projects.</p>
-							<p>I fell in love with game design, and quickly became passionate about it. Once I got to college, I immediately began taking classes in game design and animation. In order to expand my skillset, I joined, and am active as the Director of Development of, the Carnegie Mellon Game Creation Society (GCS). Throughout my year and a half at Carnegie Mellon, I have worked on more than a dozen game projects (4 with the GCS, 4 game jam games, and 4 independent projects).</p>
-							<h3>Education</h3>
-							<p>I am currently a sophomore at Carnegie Mellon University, studying Computer Science, Game Design, and Animation. Before enrolling at Carnegie Mellon, in three successive summers while in highschool I took courses in Game Design at the University of Washington, Biophysics and Biofluid Dynamics at Stanford, and Astronomy and Environmental Science at Yale.</p>
-							<p><a href="education.html">Click here to see a more detailed description of my edcuation!</a></p>
-							<h3>Skills</h3>
-							<section>
-									<div class="table-wrapper">
-										<table>
-											<thead>
-												<tr>
-													<th>Category</th>
-													<th>Description</th>
-												</tr>
-											</thead>
-											<tbody>
-												<tr>
-													<td>Programming Languages</td>
-													<td>C, C#, Java, SML, BASIC, some Python, Powershell, GLSL, RobotC</td>
-												</tr>
-												<tr>
-													<td>Game and Animation Software</td>
-													<td>Unity, Blender, Maya, Aseprite</td>
-												</tr>
-												<tr>
-													<td>Software I'm experienced with</td>
-													<td>ServiceNow, SCCM, Active Directory, Azure, AWS, NewRelic, Microsoft Office, Google Drive</td>
-												</tr>
-												<tr>
-													<td>Software I've had exposure to</td>
-													<td>Splunk, Docker, ELK Stack, WSUS, PXE</td>
-												</tr>
-											</tbody>
-										</table>
-									</div>
-							</section>
-							<h3>Work Experience</h3>
-								<div class="table-wrapper">
-									<table class="alt">
+							<h3>Summary</h3>
+							<p>Creating bounding volume hierarchies for triangle meshes in parallel on multi-core CPU platforms.</p>
+							<h3>Background</h3>
+							<ul>
+									<li> Creating a bounding volume hierarchy is often quite an expensive process for arbitrarily complex meshes. It is in essence a process of hierarchically sorting the scene primitives into spatially local groups. </li>
+									<li> The serial algorithm involves iteratively dividing the set of scene primitives, where the “best” division is dependent on a cost function known as the surface area heuristic (SAH). The end product is a binary tree, where nodes represent a bounding box surrounding all scene primitives contained in the leaves of the subtree with the current node as its root. While leaf nodes represent a list of scene primitives. </li>
+									<li> The process of creating a BVH can be split into many sub problems. Viewing each node of the BVH tree as a sub problem already puts into view the potential for parallelism. </li>
+									<li> Since sequential creation of BVHs can be expensive, it involves at least O(nlogn) since sorting can be reduced to the problem of BVH creation (at least when the BVH can have arbitrary depth and leaf nodes contain only one primitive). Therefore a lot of room is left for improvement when parallelizing this process. </li>
+								</ul>
+
+
+
+							<h3>The Challenge</h3>
+							<ul>
+								<li> As mentioned above, the process of creating a BVH can be separated into sub-problems, where each sub-problem is represented by a node in the BVH tree. These sub problems depend on their parent node sub problem to be finished before the current one can start. So the task tree is a DAG where parent nodes point to their corresponding child nodes. These are the dependencies that we must take care of to correctly parallelise the algorithm. </li>
+									
+								<li> Another problem is the issue of quality. Similar to the problem in Assignment 4, we can use techniques that sacrifice the quality of the final BVH but provide considerable speedups to the algorithm. These sacrifices can also lead to more room for parallelism. We can evaluate the quality of the final BVH either using the SAH, or time needed to render a specific scene using the BVH. </li>
+							</ul>
+
+							<h3>Resources</h3>
+							<ul>
+								<li> We will be using the 15-462 code for ray-tracing and scene manipulations as starter code for our project. We are using this due to the rich set of visualization capabilities in Scotty3D, which will allow us to present and evaluate our work with greater ease. </li>
+									
+								<li> We are also looking into the paper "Parallel BVH Construction using k-means Clustering" from the authors Daniel Meister and Jiri Bittner. We plan on visiting their approach and seeing how this approximate method using k-means will lead to more speed ups. </li>
+							</ul>
+
+							<h3>Goals and Deliverables - Plan to achieve</h3>
+							<ul>
+								<li> Implement a fully functional parallel BVH creation pipeline that can be used for ray-tracing in Scotty3D </li>
+								<li> Provide speed-up graphs for BVH creation on multi-core CPU platforms </li>
+								<li> Provide speed-up graphs relative to BVH quality - BVH quality can be measured by SAH or rendering speeds </li>
+							</ul>
+
+							<h3>Goals and Deliverables - Hope to achieve</h3>
+							<ul>
+								<li> Implement parallelism using k-means, which involves parallelizing the k-means algorithm </li>
+							</ul>
+
+							<h3>Platform Choice </h3>
+							<ul>
+								<li> Written in C++ with message passing using OpenMP </li>
+							</ul>
+
+							<h3>Schedule</h3>
+							<table class="alt">
 										<thead>
 											<tr>
-												<th>Job</th>
-												<th>Company</th>
-												<th>Description</th>
-												<th>Date</th>
+												<th>Week</th>
+												<th>Goals</th>
 											</tr>
 										</thead>
 										<tbody>
 											<tr>
-												<td>Devops and Automation Intern</td>
-												<td>Yeti Coolers</td>
+												<td>Week 1</td>
 												<td>
-													Built middleware and other custom software to automate business-critical tasks. Using Powershell and Javascript, we automated: the transfer of sensitive data between company servers and third-party API's, company onboarding and offboarding, and software deployment to employees. Additionally, we created workflows to do remote monitoring and dashboarding of all company devices, built remote control systems for facotry Windows and Unix machines, and created self-healing systems for company systems.</td>
-												<td>Summer of 2019</td>
+Revisit Scotty3D code and familiarize ourselves with how BVH creation works and plan out how our parallelization strategy will work
+												</td>
 											</tr>
 											<tr>
-												<td>Frycook and Line Worker</td>
-												<td>Wendy's</td>
-												<td>Worked as a frycook for the local Wendy's chain. Ran the grill and helped to make sandwiches.</td>
-												<td>Summer of 2018</td>
+												<td>Week 2</td>
+												<td>
+Implement parallelism for basic BVH creation for arbitrarily large scenes
+
+												</td>
 											</tr>
 											<tr>
-												<td>Vineyard Worker</td>
-												<td>Council of Ten</td>
-												<td> Worked at the Council of Ten vineyard for a summer. Constructed new segments of the yineyard, pruned grapes, and helped to produce some of the first batches of wine.</td>
-												<td>Summer of 2017</td>
+												<td>Week 3</td>
+												<td>
+Evaluate parallel algorithm in terms of BVH quality and speed-up achieved
+												</td>
 											</tr>
+											<tr>
+												<td>Week 4</td>
+												<td>
+Project checkpoint - Investigate other methods for BVH creation speed-up, e.g. k-means method
+												</td>
+											</tr>
+											<tr>
+												<td>Week 5</td>
+												<td>
+Implement new methods, e.g. k-means method and evaluate their performance with regards to speed-up and quality of BVH
+												</td>
+											</tr>
+											<tr>
+												<td>Week 6</td>
+												<td>Handin and Demo</td>
+											</tr>
+
 										</tbody>
-									</table>
-								</div>
-							<h3>Hobbies/Interests</h3>
-							<p>Surfing, Wakeboarding, Skiing, Snowboarding, Kitesurfing, Scuba Diving</p>
+							</table>
+
+
+
+
+
+
+							
 						</div>
 					</div>
 
