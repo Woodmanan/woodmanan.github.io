@@ -51,7 +51,7 @@
 
 
 
-							<h3>The Challenge (TEST)</h3>
+							<h3>The Challenge</h3>
 							<ul>
 								<li> As mentioned above, the process of creating a BVH can be separated into sub-problems, where each sub-problem is represented by a node in the BVH tree. These sub problems depend on their parent node sub problem to be finished before the current one can start. So the task tree is a DAG where parent nodes point to their corresponding child nodes. These are the dependencies that we must take care of to correctly parallelise the algorithm. </li>
 									
@@ -136,6 +136,108 @@ Implement new methods, e.g. k-means method and evaluate their performance with r
 
 
 							
+						</div>
+					</div>
+
+
+					<div id="main">
+						<div class="inner">
+							<h1>Milestone Report</h1>
+							<h3>Updated Schedule</h3>
+							<table class="alt">
+								<thead>
+									<tr>
+										<th>Week</th>
+										<th>Goals</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>Week 1</td>
+										<td>
+Revisit Scotty3D code and familiarize ourselves with how BVH creation works and plan out how our parallelization strategy will work
+										</td>
+									</tr>
+									<tr>
+										<td>Week 2</td>
+										<td>
+Implement parallelism for basic BVH creation for arbitrarily large scenes
+
+										</td>
+									</tr>
+									<tr>
+										<td>Week 3</td>
+										<td>
+Debug parallel implementation for BVH creation. Currently using a task-queue implementation, but bugs are persistent within implementation preventing us from rigorously testing and benchmarking our approach.										</td>
+									</tr>
+									<tr>
+										<td>Week 4.0</td>
+										<td>
+Ryan: Debug current task-queue based implementation method. Concurrency errors occur in the process of establishing a work queue with a single lock.										
+Manan: Investigate other methods for BVH creation speed-up, e.g. k-means method		</td>						</tr>
+									<tr>
+										<td>Week 4.5</td>
+										<td>
+											Ryan: Carry out benchmarks for task-queue approach. Benchmarks should be on time only, theoretically, it shouldn’t affect BVH quality.
+											Manan: Implement k-means approach for parallel BVH creation.											
+										</td>
+									</tr>
+									<tr>
+										<td>Week 5.0</td>
+										<td>Manan and Ryan: Continue implementing new method using k-means
+										</td>
+									</tr>
+
+									<tr>
+										<td>Week 5.5</td>
+										<td>Manan and Ryan: Evaluate and compare the differences between BVH construction using k-means and parallelization of sequential algorithm
+										</td>
+									</tr>
+
+									<tr>
+										<td>Week 6.0</td>
+										<td>Manan: Prepare speed-up graphs. Ryan: Prepare BVH quality graphs
+										</td>
+									</tr>
+
+
+								</tbody>
+					</table>
+
+
+
+							<h3>Work Completed So Far</h3>
+							<ul>
+								<li> So far, we have the serial version of the BVH formation working. We are currently working on implementing the parallel version on a shared address space model using OpenMP. The serial version of BVH creation works as follows. We begin with a list of all primitives of a particular scene, we then sort these primitives based on their mid-points, and search for a division of the scene that adheres to optimizing the surface-area heuristic (SAH). After the optimal division is found, we create two children nodes connecting to the root node, where each child node corresponds to one side of the split. The above process of splitting the scene primitives is repeated until we reach the termination condition of creating leaf nodes (usually a hard limit on the number of primitives are in a node). </li>
+									
+								<li> Our current approach uses a task-queue based approach. Since creation of nodes in a BVH depends on the completion of parent nodes, the dependence graph of the problem is a DAG that is the exact shape of the binary tree representing the BVH. There are a few characteristics about these “tasks”: earlier “tasks” have a higher cost, since they are optimizing over a larger number of primitives, and also tasks are dependent on parent tasks. With these two characteristics in mind, we decided that maintaining a task-queue is the most intuitive solution to this problem. Earlier tasks will spawn 2 tasks corresponding to their child nodes, and OpenMP threads will continuously pick up new threads until no work needs to be done anymore. We maintained access to the work-queue with a centralized lock. </li>
+							</ul>
+
+							<h3>Goals and Deliverables - Plan to achieve</h3>
+							<ul>
+								<li> Implement a fully functional parallel BVH creation pipeline that can be used for ray-tracing in Scotty3D </li>
+								<li> Provide speed-up graphs for BVH creation on multi-core CPU platforms </li>
+								<li> Provide speed-up graphs relative to BVH quality - BVH quality can be measured by SAH or rendering speeds </li>
+							</ul>
+
+							<h3>Goals and Deliverables - Hope to achieve</h3>
+							<ul>
+								<li> Implement parallelism using k-means, which involves parallelizing the k-means algorithm </li>
+							</ul>
+
+							<h3>Updated Goals and Deliverables</h3>
+							<ul>
+								<li>We believe that we can achieve all of the above, but decided on making one major change. We decided to move rendering scenes with the parallel created BVHs to the “nice to have” section as we believe that evaluating the performance of our algorithm using </li>
+							</ul>
+							<h3>Poster Session Deliverables</h3>
+							<ul>
+								<li> For our poster session, we are planning to show speedup graphs of implementations, showing the increases to speed that come from adding more cores. Additionally, we will present multiple of these graphs for the different methods we tried for BVH creation. While a demo would be possible, it would most likely be fairly uninteresting to watch in real time, so we will choose not to do that.</li>
+							</ul>
+
+							<h3>Issues and Concerns</h3>
+							<ul>
+								<li> None so far. We are a little behind schedule compared to our proposal, but we believe we can catch up to it over break.</li>
+							</ul>
 						</div>
 					</div>
 
