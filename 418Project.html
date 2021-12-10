@@ -242,7 +242,89 @@ Manan: Investigate other methods for BVH creation speed-up, e.g. k-means method	
 					</div>
 
 
+
+					<div id="main">
+						<div class="inner">
+							<h1>Final Report</h1>
+							
+							<h3>Summmary</h3>
+							<ul>
+								<li> In our project, we examine multiple methods of creating bounding volume hierarchies in parallel. We improved serial versions of the algorithm by introducing parallelism across tasks and across nodes, leading to a 4-10x speedup in creation. We also implemented a BVH using k-means clustering, which has higher overhead than our other methods but has very high levels of parallelism. We finished all 3 implementations, and compared their performance via speedup graphs and total runtime. </li>
+									
+							</ul>
+
+							<h3>Background</h3>
+							<ul>
+								<li> Bounding volume hierarchies (BVH’s) are an integral part of most ray tracing applications. They are a spatial data structure that sorts and groups primitive objects into a tree-like structure based upon those primitive’s bounding boxes. In this way, rays can quickly detect if a cluster of objects are outside of their bounds, and safely skip them, saving computation time.
+								</li>
+								<li> Creating a bounding volume hierarchy is often quite an expensive process for arbitrarily complex meshes. It is in essence a process of hierarchically sorting the scene primitives into spatially local groups. The serial algorithm involves iteratively dividing the set of scene primitives, where the “best” division is dependent on a cost function known as the surface area heuristic (SAH). The end product is a binary tree, where nodes represent a bounding box surrounding all scene primitives contained in the leaves of the subtree with the current node as its root. The leaf nodes represent a list of scene primitives, which can be searched through iteratively by a ray.</li>
+								<li>The process of creating a BVH can be split into many sub problems, which offers good routes for parallelization. Since BVH’s work by creating a tree structure, the disparate halves of the tree can be worked on independently. Per tree, the best splitting point can also be determined in parallel, allowing multiple avenues of parallelism to exist.
+								</li>
+								<li> Another method we test is using k-means clustering to create a BVH. K-means is a clustering algorithm that attempts to cluster a set of data around k mean points. It accomplishes through an iterative process where each mean determines which points are nearest to it, and sets itself equal to the mean of the points that it affects. This is continued until the means converge, or a certain number of iterations elapses. K-means has room for parallelism as well, as the work of updating individual means is separate from all other means and can be done in parallel.</li>
+								<li> Since sequential creation of BVHs can be expensive, it involves at least O(nlogn) since sorting can be reduced to the problem of BVH creation (at least when the BVH can have arbitrary depth and leaf nodes contain only one primitive). Therefore, a lot of room is left for improvement when parallelizing this process.</li>
+							</ul>
+
+							<h3>Approach 1 - Task Parallel</h3>
+							<ul>
+								<li> Perhaps the most intuitive solution for parallelism for BVH construction is what we refer to as the “task parallel” method. BVH construction is very similar to merge-sort, both are divide and conquer style sorting algorithms, with the former having a more specific sorting criterion. At each step of the algorithm, two recursive calls to the BVH construction function are called, in addition to this fact, the two recursive calls are operating on independent pieces of data. This allows for straight-forward parallelism. </li>
+								<li> A more in-depth explanation of task-parallelism works as follows. We can view the serial BVH construction algorithm as a directed-acyclic-graph (DAG), where each node corresponds to a call of the BVH construction function. At each node/task, a section of the primitives vector is allocated to the current function call. The current call takes the subset of primitives and calculates the optimal bisection. Two subsets of primitives are then created, where the recursive function is then called on each of the subsets. Note that these two subsets are mutually exclusive, and therefore both recursive calls can be executed in parallel without worrying about concurrency issues. Another key observation is that tasks are dependent on the completion of previous tasks, therefore a task queue is being constantly maintained. This observation is important when we are analyzing the performance of task-parallelism, especially for higher thread counts. </li>
+								<li> We implemented the above parallel method using OpenMP. By spawning separate tasks for each recursive call of the BVH construction function, independent tasks can be carried out in parallel. </li>
+
+							</ul>
+
+							<h3>Approach 2 - Parallelism within Nodes</h3>
+							<ul>
+								<li> Another intuitive point of parallelism is what we refer to as “parallelism within nodes”. Recall how the serial BVH construction method works. The subset of primitives is first divided into N buckets based on their midpoints. The bounding-box for each bucket is then calculated, and the optimal bisection is calculated based on which combination of mutually exclusive subsets of buckets leads to the best SAH value. </li>
+								<li> The motivation for parallelism here is clear, since most of the computational cost within a node is allocating each primitive to its respective bucket and calculating the bounding box for all primitives within the bucket, we can assign primitives to buckets in parallel. However, if we directly implement parallel bucket allocation, there are obvious concurrency issues that arise, the implication of this is that each operation on updating the overall bounding box of a bucket must be done atomically. This is where we employ fine-grained lock mechanisms. We allocate a locking primitive for each bucket, and for each primitive, before updating the bucket it is allocated to, we attempt to grab the lock. This leads to some synchronization overhead, however it is a necessary procedure due to the nature of the problem. The effect of this synchronization overhead can be observed in the results section. </li>
+								<li> After allocating each primitive to its corresponding bucket, we can then move onto the part of the algorithm that calculates the optimal bisection based on SAH values. Since there are a constant number of buckets and contributes a relatively low amount of computational complexity to the overall algorithm, we decided to carry out this part of the algorithm serially. </li>
+								<li> Once again, we used OpenMP to implement parallelism within nodes. Using parallel for loops for allocating primitives to buckets and also an array of OpenMP locks for maintaining concurrency when updating bounding boxes for each bucket. </li>
+
+							</ul>
+							<h3>Approach 3 - K-means</h3>
+							<ul>
+								<li> Our k-means algorithm works in a 3 part process, wherein it divides the existing faces using k-means, collects faces into base nodes, and agglomerates the nodes into a tree. This algorithm was derived from Meister and Bittner’s work (1), and matches the high-level algorithm that they described in their paper. We wrote the code for this algorithm in C++, using OpenMP to achieve the parallelism. </li>
+								<li> The first step in the algorithm is to organize the primitives of the object using k-means clustering. When the BVH is created, a resolution is specified which determines the average number of primitives per leaf node. The number of means used for the k-means algorithm is set to be the number of primitives divided by the resolution, so that each mean can be used independently as a node later in the process. Once the number of means is determined, sets each mean to the center of an existing primitive, chosen randomly. After all the means are set, the algorithm begins working in parallel across the data. Each primitive can be worked on independently, since they only relate to one existing means, and not to each other at all. For each primitive, the nearest mean is found, and the center of that primitive is added to the new mean. Fine grained locking is used to protect the new means from being overwritten by multiple primitives trying to add themselves at the same time, with one lock per mean. This step repeats for a few iterations, or until all means have moved less than a 1 unit in a given step. </li>
+								<li> Once the means have been determined, the BVH constructs an initial layer of BVH nodes from those means. This step is also data-parallel, because each mean can independently collect the primitives that are closest to it. Because of this, the nodes can be constructed from their means in parallel. </li>
+								<li> The last step of the BVH creation is the agglomerative clustering of the nodes. In this step, the BVH attempts to build a node tree from the ground up, using the nodes that were created in the previous step. The first step of this process is to create a working set of node references, which tie to the existing nodes. This set is modified and shrunk as the algorithm progresses, and exists to keep a layer of abstraction between the nodes and the tree. The clustering algorithm begins working on this full vector of references, and continues working until only one node remains. The first step of each iteration is to identify the nearest neighbor of each node. The nearest neighbor is determined by either the euclidean distance between the centers of nodes, or by a mix of the distances between their corners. This step is done in parallel for each node, since no writing is done to the nodes until after this step is completed. Once each node has a nearest neighbor, the nodes identify if their nearest neighbor and themselves are a matching pair. If so, they are cleared to be merged, and the node with the larger index marks itself in the sum list. The sum list indicates positions that will be removed from the vector in the next iteration - since the two nodes will be tied together by a new node, that new node will replace the first node, leaving the second node’s position open. This marking step is also completely data-parallel, so each node is worked on independently. </li>
+								<li> Once all pairs of nodes have been identified and marked, the sum list is transformed into a scan list, using a parallel sum-scan operation. What this does is return both the total number of deletions that will happen, as well as identify the offset needed for every node in the reference vector. At this point, merges are ready to be performed. This step is also completed entirely in parallel, which is possible due to the information collected by the scan. Each node can independently tell if it needs to be merged, if it is in the correct position to be merged, and where in the updated nodes list it is safe to write to. Every node performs these checks, merges if it is allowed to do so, and then writes the results into an updated nodes list in parallel. This process is guaranteed to merge at least one pair of nodes per iteration. </li>
+								<li> 	Once all of these steps are completed, a final node is returned, which is the head of the BVH. From this BVH, various statistics are computed, such as the depth of the BVH and an estimated speedup. </li>
+
+							</ul>
+
+							<h3>Results 1 - Task Parallel</h3>
+							<img src="images/418-project/task_parallel.png" alt="" class="center">
+							<ul>
+								<li> For benchmarking the task-parallel implementation, we tested the algorithm using 1, 4, 8, 16 and 32 cores. We tested our algorithm on a sample mesh with 300,000 triangle primitives. During our benchmarking process, we also varied the maximum leaf size, which essentially controls the computational load, as having a smaller leaf size means that a deeper BVH tree is constructed. In our experiments, maximum leaf size is equivalent to problem size.</li>
+								<li> In the above results, we are comparing performance based on computational speedup with the single core performance as the baseline. In the task-parallel approach, it can be observed there is considerable speedup across all numbers of cores. However, it can be observed that we are obtaining sub-linear speedup, which is not optimal. Also, the speed-up plateaus as a larger number of cores is used.</li>
+								<li> We believe the sub-optimal speed-up is caused by high idle times when there are a high number of threads. Note that tasks lower in the task tree are only generated after the current call is finished. Note that the root node does the most work, but while the root node is being completed, no other work is being done by other threads since no other tasks have been spawned. This is a significant bottleneck for parallelisation, especially for a higher number of cores. This behaviour is confirmed by the observation that having a lower max leaf size leads to better performance, especially for higher core counts. Having a lower max leaf size implies that a greater number of tasks are spawned due to a higher BVH tree depth. A greater number of independent tasks are spawned at the lower levels of the tree, and therefore there is greater room for task-based parallelism. </li>
+							</ul>
+
+							<h3>Results 2 - Node Parallel</h3>
+							<img src="images/418-project/node_parallel.png" alt="" class="center">
+							<ul>
+								<li> For benchmarking the task-parallel implementation, we tested the algorithm using 1, 4, 8, 16, 32 and 64 cores. We tested our algorithm on a sample mesh with 300,000 triangle primitives. For problem size, we also used max leaf size as an indication of the amount of computational work being completed. </li>
+								<li> In the above results, we are comparing performance based on computational speedup with the single core performance as the baseline. It can be observed that we are obtaining sub-linear speedup, which is not optimal. Also, performance actually worsens when we increase the core count from 32 to 64.</li>
+								<li> Overall, we are getting better speedup compared to the task-parallel approach. We believe that this is because there are no longer dependencies between tasks, as all threads are being utilized within the node. However, we can observe a clear dropoff in performance after 32 cores. This is an explainable phenomenon. For our implementation, we decided to divide the current working set of primitives into 32 buckets. Therefore, a clear lack of parallelism can be observed beyond 32 cores since our algorithm is not able to utilize the additional cores. </li>
+								<li> Another interesting observation is that, contrary to the task-parallel approach, this approach scales poorly with problem size. As max leaf size decreases, speedup also decreases. This is due to the fact that for nodes with a smaller working set of primitives, there is not a lot of computational work to be done, and adding parallelism for those nodes will only lead to additional overhead.</li>
+							
+							</ul>
+
+							<h3>Results 3 - K-Means</h3>
+							<img src="images/418-project/kmeans.png" alt="" class="center">
+							<ul>
+								<li> We tested this algorithm on a large object consisting of 100,000 triangles, and ran it with cores equal to 1, 4, 8, 16, 32, 64, and 128. The baseline test was 1 core, running the same parallel algorithm as the multi-core tests. All tests were performed with leaf size of 100.</li>
+								<li> The algorithm maintained a high level of parallelism across all tests, with the scaling slowing down between 64 and 128 cores. This result is what we expected to see, as there are still some serial portions of the program that would prevent a perfect speedup, as well as there being some locking required for updating the means, and the cost of synchronization at the end of every parallel for loop. In general, though, the straight lines of the log-scaled graph indicate that there was a direct correspondence between adding cores and speedup. In other words, doubling the number of cores halved the runtime consistently, up until more than 64 cores.</li>
+								<li> The quality of the tree generated by the agglomerative clustering varied heavily with the number of nodes that it had to work with. We found the happy medium to be around a thousand nodes, which resulted in a tree with a depth of around 20. With higher or lower numbers of nodes, the trees tended to be more linear, with a depth of around 519 for 10000 nodes and a depth of 12 for 100 nodes. This is a failure of the clustering algorithm, which relied on linear distance between the nodes to determine pairings. If a large node was formed in the center of the other nodes, it would become the best match of all nodes in the tree. This forced the algorithm to make one match per step and led to large, unbalanced trees in some instances. Improvements to the clustering algorithm could be explored further, the most promising of which would be to use the Surface Area heuristic instead of euclidean distance. </li>
+								<li> At lower numbers of cores, this algorithm was much slower than the other two implementations, but it’s high level of parallelism let it be similar to them at higher numbers of cores. Overall, we found that it was roughly equivalent to the other algorithms.</li>
+
+							</ul>
+						</div>
+					</div>
+
+
 			</div>
+
+			
 
 		<!-- Scripts -->
 			<script src="assets/js/jquery.min.js"></script>
@@ -253,3 +335,4 @@ Manan: Investigate other methods for BVH creation speed-up, e.g. k-means method	
 
 	</body>
 </html>
+
